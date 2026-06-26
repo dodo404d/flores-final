@@ -1,0 +1,14 @@
+Bloque 1 ejecutado correctamente
+================================
+Prueba: mini red Dense -> ReLU -> Dense -> Softmax
+Epocas: 80
+Learning rate: 0.05
+Tiempo total ms: 42.6719
+Archivo de entrenamiento: results/prueba_bloque1.csv
+
+Pendiente para siguientes bloques:
+- Conv2D forward/backward
+- MaxPool2D forward/backward
+- Flatten
+- CNN completa
+- OpenMP

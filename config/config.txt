@@ -1,0 +1,11 @@
+# Configuracion general del Bloque 1
+# Este bloque carga la estructura real dataset/flowers y ejecuta una mini red base.
+
+dataset.path=dataset/flowers
+image.width=64
+image.height=64
+max.images.per.class=3
+
+epochs=80
+learning.rate=0.05
+seed=42

@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Source Files"><UniqueIdentifier>{3e57fb97-2f25-4d20-aa7e-9ac444f45601}</UniqueIdentifier></Filter>
+    <Filter Include="Header Files"><UniqueIdentifier>{4f3d3b26-cc90-4c10-b4be-9eeff351502f}</UniqueIdentifier></Filter>
+    <Filter Include="Source Files\core"><UniqueIdentifier>{c7fb21b6-f302-49ea-bddc-c4f760b16e7e}</UniqueIdentifier></Filter>
+    <Filter Include="Source Files\data"><UniqueIdentifier>{8fbcb2f7-b413-4b18-8a32-424211306a42}</UniqueIdentifier></Filter>
+    <Filter Include="Source Files\layers"><UniqueIdentifier>{e4d9c7d7-763d-40b9-84be-1852cc4e1845}</UniqueIdentifier></Filter>
+    <Filter Include="Source Files\training"><UniqueIdentifier>{55a8be34-6552-403d-a190-a260a0fd9e0e}</UniqueIdentifier></Filter>
+    <Filter Include="Source Files\utils"><UniqueIdentifier>{4d2dfe5a-0822-469f-b48c-b58db7be4d0b}</UniqueIdentifier></Filter>
+    <Filter Include="Source Files\tests"><UniqueIdentifier>{3d3d8710-026c-45b1-92d2-159d11ff0c17}</UniqueIdentifier></Filter>
+    <Filter Include="Header Files\core"><UniqueIdentifier>{e1dca82b-ad61-48a9-a314-8d6bd2927707}</UniqueIdentifier></Filter>
+    <Filter Include="Header Files\data"><UniqueIdentifier>{6e09afe3-700f-4e50-a896-ea19628fefc5}</UniqueIdentifier></Filter>
+    <Filter Include="Header Files\layers"><UniqueIdentifier>{e8ff4f96-5ffe-4912-9897-8b88734dde9a}</UniqueIdentifier></Filter>
+    <Filter Include="Header Files\training"><UniqueIdentifier>{d20bf8b1-a35f-4709-8999-113a0df1d4dd}</UniqueIdentifier></Filter>
+    <Filter Include="Header Files\utils"><UniqueIdentifier>{c24eff40-5448-4269-8bb9-9086c273ae8a}</UniqueIdentifier></Filter>
+    <Filter Include="Header Files\tests"><UniqueIdentifier>{83cb8345-28a2-4a7d-8d1c-c3f5733fc2dc}</UniqueIdentifier></Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="src\main.cpp"><Filter>Source Files</Filter></ClCompile>
+    <ClCompile Include="src\core\Tensor.cpp"><Filter>Source Files\core</Filter></ClCompile>
+    <ClCompile Include="src\core\Matrix.cpp"><Filter>Source Files\core</Filter></ClCompile>
+    <ClCompile Include="src\core\RandomInitializer.cpp"><Filter>Source Files\core</Filter></ClCompile>
+    <ClCompile Include="src\data\LabelEncoder.cpp"><Filter>Source Files\data</Filter></ClCompile>
+    <ClCompile Include="src\data\Dataset.cpp"><Filter>Source Files\data</Filter></ClCompile>
+    <ClCompile Include="src\data\ImageProcessor.cpp"><Filter>Source Files\data</Filter></ClCompile>
+    <ClCompile Include="src\data\ImageFolderDatasetLoader.cpp"><Filter>Source Files\data</Filter></ClCompile>
+    <ClCompile Include="src\layers\Dense.cpp"><Filter>Source Files\layers</Filter></ClCompile>
+    <ClCompile Include="src\layers\ReLU.cpp"><Filter>Source Files\layers</Filter></ClCompile>
+    <ClCompile Include="src\layers\SoftmaxCrossEntropy.cpp"><Filter>Source Files\layers</Filter></ClCompile>
+    <ClCompile Include="src\training\OptimizerSGD.cpp"><Filter>Source Files\training</Filter></ClCompile>
+    <ClCompile Include="src\training\Metrics.cpp"><Filter>Source Files\training</Filter></ClCompile>
+    <ClCompile Include="src\utils\Logger.cpp"><Filter>Source Files\utils</Filter></ClCompile>
+    <ClCompile Include="src\utils\Timer.cpp"><Filter>Source Files\utils</Filter></ClCompile>
+    <ClCompile Include="src\utils\Config.cpp"><Filter>Source Files\utils</Filter></ClCompile>
+    <ClCompile Include="src\utils\CSVWriter.cpp"><Filter>Source Files\utils</Filter></ClCompile>
+    <ClCompile Include="src\tests\TestSuite.cpp"><Filter>Source Files\tests</Filter></ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="include\core\Tensor.h"><Filter>Header Files\core</Filter></ClInclude>
+    <ClInclude Include="include\core\Matrix.h"><Filter>Header Files\core</Filter></ClInclude>
+    <ClInclude Include="include\core\RandomInitializer.h"><Filter>Header Files\core</Filter></ClInclude>
+    <ClInclude Include="include\data\LabelEncoder.h"><Filter>Header Files\data</Filter></ClInclude>
+    <ClInclude Include="include\data\Dataset.h"><Filter>Header Files\data</Filter></ClInclude>
+    <ClInclude Include="include\data\ImageProcessor.h"><Filter>Header Files\data</Filter></ClInclude>
+    <ClInclude Include="include\data\ImageFolderDatasetLoader.h"><Filter>Header Files\data</Filter></ClInclude>
+    <ClInclude Include="include\layers\Dense.h"><Filter>Header Files\layers</Filter></ClInclude>
+    <ClInclude Include="include\layers\ReLU.h"><Filter>Header Files\layers</Filter></ClInclude>
+    <ClInclude Include="include\layers\SoftmaxCrossEntropy.h"><Filter>Header Files\layers</Filter></ClInclude>
+    <ClInclude Include="include\training\OptimizerSGD.h"><Filter>Header Files\training</Filter></ClInclude>
+    <ClInclude Include="include\training\Metrics.h"><Filter>Header Files\training</Filter></ClInclude>
+    <ClInclude Include="include\utils\Logger.h"><Filter>Header Files\utils</Filter></ClInclude>
+    <ClInclude Include="include\utils\Timer.h"><Filter>Header Files\utils</Filter></ClInclude>
+    <ClInclude Include="include\utils\Config.h"><Filter>Header Files\utils</Filter></ClInclude>
+    <ClInclude Include="include\utils\CSVWriter.h"><Filter>Header Files\utils</Filter></ClInclude>
+    <ClInclude Include="include\tests\TestSuite.h"><Filter>Header Files\tests</Filter></ClInclude>
+  </ItemGroup>
+</Project>
