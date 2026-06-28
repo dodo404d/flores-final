@@ -1,0 +1,18 @@
+CNN secuencial ejecutada correctamente
+=====================================
+Arquitectura:
+Input 64x64x3
+Conv2D 8 filtros 3x3
+ReLU
+MaxPool2D 2x2
+Flatten 7688
+Dense 64
+ReLU
+Dense 5
+SoftmaxCrossEntropy
+
+Epocas: 20
+Learning rate: 0.001
+Imagenes usadas: 249
+Tiempo total ms: 89946.4
+Metricas CSV: results/cnn_secuencial.csv

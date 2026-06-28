@@ -12,13 +12,17 @@
 #include "layers/SoftmaxCrossEntropy.h"
 #include "training/OptimizerSGD.h"
 #include "training/Metrics.h"
+#include "layers/Conv2D.h"
+#include "layers/MaxPool2D.h"
+#include "layers/Flatten.h"
 
 #include <filesystem>
 #include <algorithm>
-#include <fstream>
 #include <iomanip>
 #include <sstream>
 #include <vector>
+#include <fstream>
+#include <string>
 
 namespace fs = std::filesystem;
 using namespace flowercnn;
@@ -65,89 +69,201 @@ static void saveDatasetSummary(const ImageDataset& dataset, const LabelEncoder& 
     }
 }
 
-static void runMiniNeuralNetworkDemo(int epochs, double learningRate, unsigned int seed) {
-    Logger::title("Mini red base: Dense -> ReLU -> Dense -> Softmax");
-    Logger::info("Esta prueba valida las piezas base antes de implementar Conv2D y MaxPool.");
+static void saveSequentialCNNModel(
+    const std::string& path,
+    const Conv2D& conv1,
+    const Dense& dense1,
+    const Dense& dense2,
+    int epochs,
+    double learningRate,
+    std::size_t datasetSize
+) {
+    fs::create_directories("models");
+
+    std::ofstream out(path);
+
+    if (!out.is_open()) {
+        Logger::warn("No se pudo guardar el modelo en " + path);
+        return;
+    }
+
+    out << "FlowerCNNSequentialModelV1\n";
+    out << "image_height 64\n";
+    out << "image_width 64\n";
+    out << "image_channels 3\n";
+    out << "classes daisy dandelion rose sunflower tulip\n";
+    out << "epochs " << epochs << "\n";
+    out << "learning_rate " << learningRate << "\n";
+    out << "dataset_size " << datasetSize << "\n";
+
+    conv1.save(out);
+    dense1.save(out);
+    dense2.save(out);
+
+    Logger::ok("Modelo guardado en " + path);
+}
+
+
+static void runSequentialCNNTraining(
+    const ImageDataset& imageDataset,
+    int epochs,
+    double learningRate,
+    unsigned int seed
+) {
+    Logger::title("CNN secuencial - Entrenamiento completo");
+
+    if (imageDataset.empty()) {
+        Logger::warn("No hay imagenes cargadas para entrenar la CNN secuencial.");
+        return;
+    }
 
     fs::create_directories("results");
-    CSVWriter csv("results/prueba_bloque1.csv");
-    csv.writeRow({"epoch", "loss", "accuracy"});
+
+    CSVWriter csv("results/cnn_secuencial.csv");
+    csv.writeRow({"epoch", "loss", "accuracy", "time_ms"});
 
     RandomInitializer::setSeed(seed);
 
-    Dense dense1(3, 12);
-    ReLU relu1;
-    Dense dense2(12, 5);
-    SoftmaxCrossEntropy criterion;
-    OptimizerSGD optimizer(learningRate);
+    Conv2D conv1(3, 8, 3, 1, 0);
+    ReLU reluConv;
+    MaxPool2D pool1(2, 2);
+    Flatten flatten;
 
-    auto dataset = buildToyFlowerLikeDataset();
-    Timer timer;
-    timer.start();
+    Dense dense1(31 * 31 * 8, 64);
+    ReLU reluDense;
+    Dense dense2(64, 5);
+
+    SoftmaxCrossEntropy criterion;
+
+    saveSequentialCNNModel(
+        "models/cnn_secuencial_inicial.txt",
+        conv1,
+        dense1,
+        dense2,
+        epochs,
+        learningRate,
+        imageDataset.size()
+    );
+
+    Timer totalTimer;
+    totalTimer.start();
 
     for (int epoch = 1; epoch <= epochs; ++epoch) {
+        Timer epochTimer;
+        epochTimer.start();
+
         double totalLoss = 0.0;
         std::vector<int> predictions;
         std::vector<int> labels;
 
-        for (const auto& sample : dataset) {
-            auto z1 = dense1.forward(sample.x);
-            auto a1 = relu1.forward(z1);
-            auto z2 = dense2.forward(a1);
-            double loss = criterion.forward(z2, sample.y);
-            auto gradZ2 = criterion.backward();
-            auto gradA1 = dense2.backward(gradZ2);
-            auto gradZ1 = relu1.backward(gradA1);
-            dense1.backward(gradZ1);
+        for (const auto& sample : imageDataset.samples()) {
+            /*
+                Forward
+            */
+            Tensor zConv = conv1.forward(sample.image);
+            Tensor aConv = reluConv.forward(zConv);
+            Tensor pooled = pool1.forward(aConv);
+            std::vector<double> flat = flatten.forward(pooled);
 
-            optimizer.step(dense2);
-            optimizer.step(dense1);
+            std::vector<double> zDense1 = dense1.forward(flat);
+            std::vector<double> aDense1 = reluDense.forward(zDense1);
+            std::vector<double> logits = dense2.forward(aDense1);
+
+            double loss = criterion.forward(logits, sample.label);
+
+            predictions.push_back(Metrics::argmax(criterion.probabilities()));
+            labels.push_back(sample.label);
+
+            /*
+                Backward
+            */
+            std::vector<double> gradLogits = criterion.backward();
+
+            std::vector<double> gradA1 = dense2.backward(gradLogits);
+            std::vector<double> gradZ1 = reluDense.backward(gradA1);
+
+            std::vector<double> gradFlat = dense1.backward(gradZ1);
+            Tensor gradPooled = flatten.backward(gradFlat);
+
+            Tensor gradAConv = pool1.backward(gradPooled);
+            Tensor gradZConv = reluConv.backward(gradAConv);
+
+            conv1.backward(gradZConv);
+
+            /*
+                Actualizacion de pesos
+            */
+            dense2.applyGradients(learningRate);
+            dense1.applyGradients(learningRate);
+            conv1.applyGradients(learningRate);
 
             totalLoss += loss;
-            predictions.push_back(Metrics::argmax(criterion.probabilities()));
-            labels.push_back(sample.y);
         }
 
-        double avgLoss = totalLoss / static_cast<double>(dataset.size());
+        double avgLoss = totalLoss / static_cast<double>(imageDataset.size());
         double acc = Metrics::accuracy(predictions, labels);
+        double epochMs = epochTimer.elapsedMilliseconds();
 
-        csv.writeRow({std::to_string(epoch), std::to_string(avgLoss), std::to_string(acc)});
+        csv.writeRow({
+            std::to_string(epoch),
+            std::to_string(avgLoss),
+            std::to_string(acc),
+            std::to_string(epochMs)
+        });
 
-        int printEvery = std::max(1, epochs / 10);
-        if (epoch == 1 || epoch == epochs || epoch % printEvery == 0) {
-            std::ostringstream oss;
-            oss << "Epoca " << std::setw(3) << epoch
-                << " | loss=" << std::fixed << std::setprecision(6) << avgLoss
-                << " | accuracy=" << std::fixed << std::setprecision(2) << (acc * 100.0) << "%";
-            Logger::info(oss.str());
-        }
+        std::ostringstream oss;
+        oss << "Epoca " << std::setw(3) << epoch
+            << " | loss=" << std::fixed << std::setprecision(6) << avgLoss
+            << " | accuracy=" << std::fixed << std::setprecision(2) << (acc * 100.0) << "%"
+            << " | tiempo=" << std::fixed << std::setprecision(2) << epochMs << " ms";
+
+        Logger::info(oss.str());
     }
 
-    double ms = timer.elapsedMilliseconds();
-    std::ofstream summary("results/resumen_bloque1.txt");
+    double totalMs = totalTimer.elapsedMilliseconds();
+
+    std::ofstream summary("results/resumen_cnn_secuencial.txt");
     if (summary.is_open()) {
-        summary << "Bloque 1 ejecutado correctamente\n";
-        summary << "================================\n";
-        summary << "Prueba: mini red Dense -> ReLU -> Dense -> Softmax\n";
+        summary << "CNN secuencial ejecutada correctamente\n";
+        summary << "=====================================\n";
+        summary << "Arquitectura:\n";
+        summary << "Input 64x64x3\n";
+        summary << "Conv2D 8 filtros 3x3\n";
+        summary << "ReLU\n";
+        summary << "MaxPool2D 2x2\n";
+        summary << "Flatten 7688\n";
+        summary << "Dense 64\n";
+        summary << "ReLU\n";
+        summary << "Dense 5\n";
+        summary << "SoftmaxCrossEntropy\n\n";
         summary << "Epocas: " << epochs << "\n";
         summary << "Learning rate: " << learningRate << "\n";
-        summary << "Tiempo total ms: " << ms << "\n";
-        summary << "Archivo de entrenamiento: results/prueba_bloque1.csv\n";
-        summary << "\nPendiente para siguientes bloques:\n";
-        summary << "- Conv2D forward/backward\n";
-        summary << "- MaxPool2D forward/backward\n";
-        summary << "- Flatten\n";
-        summary << "- CNN completa\n";
-        summary << "- OpenMP\n";
+        summary << "Imagenes usadas: " << imageDataset.size() << "\n";
+        summary << "Tiempo total ms: " << totalMs << "\n";
+        summary << "Metricas CSV: results/cnn_secuencial.csv\n";
     }
 
-    std::ostringstream oss;
-    oss << "Mini red finalizada en " << std::fixed << std::setprecision(2) << ms << " ms.";
-    Logger::ok(oss.str());
+
+    saveSequentialCNNModel(
+        "models/cnn_secuencial_final.txt",
+        conv1,
+        dense1,
+        dense2,
+        epochs,
+        learningRate,
+        imageDataset.size()
+    );
+
+    std::ostringstream done;
+    done << "Entrenamiento CNN secuencial finalizado en "
+         << std::fixed << std::setprecision(2) << totalMs << " ms.";
+
+    Logger::ok(done.str());
+    Logger::ok("Metricas guardadas en results/cnn_secuencial.csv");
 }
 
 int main() {
-    Logger::title("FlowerCNN - Bloque 1");
+    Logger::title("FlowerCNN - CNN secuencial");
 
     Config config;
     if (config.load("config/config.txt")) {
@@ -189,10 +305,18 @@ int main() {
         Logger::ok(oss.str());
     }
 
-    runMiniNeuralNetworkDemo(epochs, learningRate, seed);
+    /*
+        Para pruebas pequeñas usamos pocas epocas.
+        Luego, para resultados finales, pueden aumentar este valor
+        y compilar con -O2.
+    */
+    int cnnEpochs = 20;  //NÚMERO DE EPOCAS
+    double cnnLearningRate = 0.001;
 
-    Logger::title("Fin del Bloque 1");
-    Logger::ok("Base lista para implementar Conv2D, MaxPool, Flatten y OpenMP en los siguientes bloques.");
+    runSequentialCNNTraining(imageDataset, cnnEpochs, cnnLearningRate, seed);
+
+    Logger::title("Fin del Bloque 2 - CNN secuencial");
+    Logger::ok("CNN secuencial lista como linea base para la version paralela con OpenMP.");
 
     return 0;
 }

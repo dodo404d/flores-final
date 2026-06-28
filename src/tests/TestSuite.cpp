@@ -8,6 +8,7 @@
 #include "core/RandomInitializer.h"
 
 #include <cmath>
+#include <vector>
 #include <sstream>
 
 namespace flowercnn {
@@ -54,7 +55,9 @@ bool TestSuite::runAll() {
 
     try {
         ReLU relu;
-        auto out = relu.forward({-1.0, 2.0, -0.5, 3.0});
+        std::vector<double> reluInput = {-1.0, 2.0, -0.5, 3.0};
+        auto out = relu.forward(reluInput);
+        
         ok = ok && almostEqual(out[0], 0.0) && almostEqual(out[1], 2.0) && almostEqual(out[2], 0.0) && almostEqual(out[3], 3.0);
         Logger::ok("ReLU: activacion correcta.");
     } catch (...) {

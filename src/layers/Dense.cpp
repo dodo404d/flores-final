@@ -2,6 +2,9 @@
 #include "core/RandomInitializer.h"
 #include <stdexcept>
 #include <algorithm>
+#include <iostream>
+#include <iomanip>
+#include <string>
 
 namespace flowercnn {
 
@@ -48,6 +51,62 @@ void Dense::applyGradients(double learningRate) {
             weights_.at(i, j) -= learningRate * gradWeights_.at(i, j);
         }
         bias_[i] -= learningRate * gradBias_[i];
+    }
+}
+
+void Dense::save(std::ostream& out) const {
+    out << "Dense " << inputSize() << " " << outputSize() << "\n";
+
+    out << std::setprecision(17);
+
+    out << weights_.size() << "\n";
+    for (double value : weights_.data()) {
+        out << value << " ";
+    }
+    out << "\n";
+
+    out << bias_.size() << "\n";
+    for (double value : bias_) {
+        out << value << " ";
+    }
+    out << "\n";
+}
+
+void Dense::load(std::istream& in) {
+    std::string tag;
+    std::size_t inputSizeFile;
+    std::size_t outputSizeFile;
+
+    in >> tag >> inputSizeFile >> outputSizeFile;
+
+    if (tag != "Dense") {
+        throw std::runtime_error("Dense::load esperaba etiqueta Dense");
+    }
+
+    if (inputSizeFile != inputSize() || outputSizeFile != outputSize()) {
+        throw std::runtime_error("Dense::load dimensiones incompatibles");
+    }
+
+    std::size_t weightsSize;
+    in >> weightsSize;
+
+    if (weightsSize != weights_.size()) {
+        throw std::runtime_error("Dense::load tamano de pesos incompatible");
+    }
+
+    for (double& value : weights_.data()) {
+        in >> value;
+    }
+
+    std::size_t biasSize;
+    in >> biasSize;
+
+    if (biasSize != bias_.size()) {
+        throw std::runtime_error("Dense::load tamano de bias incompatible");
+    }
+
+    for (double& value : bias_) {
+        in >> value;
     }
 }
 

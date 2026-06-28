@@ -1,6 +1,7 @@
 #pragma once
 
 #include <vector>
+#include <iosfwd>
 #include "core/Matrix.h"
 
 namespace flowercnn {
@@ -19,6 +20,9 @@ public:
     std::vector<double> forward(const std::vector<double>& input);
     std::vector<double> backward(const std::vector<double>& gradOutput);
     void applyGradients(double learningRate);
+    
+    void save(std::ostream& out) const;
+    void load(std::istream& in);
 
     std::size_t inputSize() const;
     std::size_t outputSize() const;

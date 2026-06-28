@@ -1,0 +1,22 @@
+# Ejecutables y compilados
+*.exe
+*.obj
+*.pdb
+*.ilk
+*.o
+*.a
+
+# Carpetas de build
+x64/
+Debug/
+Release/
+build/
+.vs/
+
+# Archivos de usuario de Visual Studio
+*.user
+
+# Temporales
+*.log
+.DS_Store
+Thumbs.db

@@ -4,7 +4,7 @@
 dataset.path=dataset/flowers
 image.width=64
 image.height=64
-max.images.per.class=3
+max.images.per.class=250
 
 epochs=80
 learning.rate=0.05
