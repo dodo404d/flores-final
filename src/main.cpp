@@ -15,6 +15,7 @@
 #include "layers/Conv2D.h"
 #include "layers/MaxPool2D.h"
 #include "layers/Flatten.h"
+#include <omp.h>
 
 #include <filesystem>
 #include <algorithm>
@@ -104,22 +105,29 @@ static void saveSequentialCNNModel(
 }
 
 
-static void runSequentialCNNTraining(
+static void runCNNTraining(
     const ImageDataset& imageDataset,
     int epochs,
     double learningRate,
-    unsigned int seed
+    unsigned int seed,
+    int numThreads,
+    CSVWriter& globalCsv
 ) {
-    Logger::title("CNN secuencial - Entrenamiento completo");
+    omp_set_num_threads(numThreads);
+    std::ostringstream titleOss;
+    titleOss << "CNN - Entrenamiento con " << numThreads << " hilo(s)";
+    Logger::title(titleOss.str());
 
     if (imageDataset.empty()) {
-        Logger::warn("No hay imagenes cargadas para entrenar la CNN secuencial.");
+        Logger::warn("No hay imagenes cargadas para entrenar la CNN.");
         return;
     }
 
     fs::create_directories("results");
 
-    CSVWriter csv("results/cnn_secuencial.csv");
+    std::ostringstream csvName;
+    csvName << "results/cnn_entrenamiento_" << numThreads << "hilos.csv";
+    CSVWriter csv(csvName.str());
     csv.writeRow({"epoch", "loss", "accuracy", "time_ms"});
 
     RandomInitializer::setSeed(seed);
@@ -147,6 +155,7 @@ static void runSequentialCNNTraining(
 
     Timer totalTimer;
     totalTimer.start();
+    double finalAccuracy = 0.0;
 
     for (int epoch = 1; epoch <= epochs; ++epoch) {
         Timer epochTimer;
@@ -202,6 +211,7 @@ static void runSequentialCNNTraining(
 
         double avgLoss = totalLoss / static_cast<double>(imageDataset.size());
         double acc = Metrics::accuracy(predictions, labels);
+        finalAccuracy = acc;
         double epochMs = epochTimer.elapsedMilliseconds();
 
         csv.writeRow({
@@ -245,7 +255,7 @@ static void runSequentialCNNTraining(
 
 
     saveSequentialCNNModel(
-        "models/cnn_secuencial_final.txt",
+        "models/cnn_modelo_final_" + std::to_string(numThreads) + "hilos.txt",
         conv1,
         dense1,
         dense2,
@@ -253,13 +263,18 @@ static void runSequentialCNNTraining(
         learningRate,
         imageDataset.size()
     );
+    
+    globalCsv.writeRow({
+        std::to_string(numThreads),
+        std::to_string(totalMs),
+        std::to_string(finalAccuracy)
+    });
 
     std::ostringstream done;
-    done << "Entrenamiento CNN secuencial finalizado en "
+    done << "Entrenamiento con " << numThreads << " hilos finalizado en "
          << std::fixed << std::setprecision(2) << totalMs << " ms.";
 
     Logger::ok(done.str());
-    Logger::ok("Metricas guardadas en results/cnn_secuencial.csv");
 }
 
 int main() {
@@ -313,10 +328,16 @@ int main() {
     int cnnEpochs = 20;  //NÚMERO DE EPOCAS
     double cnnLearningRate = 0.001;
 
-    runSequentialCNNTraining(imageDataset, cnnEpochs, cnnLearningRate, seed);
+    CSVWriter speedupCsv("results/speedup_openmp.csv");
+    speedupCsv.writeRow({"hilos", "tiempo_total_ms", "accuracy_final"});
 
-    Logger::title("Fin del Bloque 2 - CNN secuencial");
-    Logger::ok("CNN secuencial lista como linea base para la version paralela con OpenMP.");
+    int threadCounts[] = {1, 2, 4, 8};
+    for (int t : threadCounts) {
+        runCNNTraining(imageDataset, cnnEpochs, cnnLearningRate, seed, t, speedupCsv);
+    }
+
+    Logger::title("Fin del Bloque 3 - Paralelismo OpenMP");
+    Logger::ok("Pruebas con multiples hilos completadas y resultados guardados en results/speedup_openmp.csv.");
 
     return 0;
 }

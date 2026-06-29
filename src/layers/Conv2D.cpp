@@ -66,7 +66,9 @@ Tensor Conv2D::forward(const Tensor& input) {
 
     Tensor output(outputHeight, outputWidth, outputChannels_, 0.0);
 
-    for (std::size_t f = 0; f < outputChannels_; ++f) {
+    int outChannels = static_cast<int>(outputChannels_);
+#pragma omp parallel for
+    for (int f = 0; f < outChannels; ++f) {
         for (std::size_t oy = 0; oy < outputHeight; ++oy) {
             for (std::size_t ox = 0; ox < outputWidth; ++ox) {
 
@@ -130,7 +132,9 @@ Tensor Conv2D::backward(const Tensor& gradOutput) {
         0.0
     );
 
-    for (std::size_t f = 0; f < outputChannels_; ++f) {
+    int outChannels = static_cast<int>(outputChannels_);
+#pragma omp parallel for
+    for (int f = 0; f < outChannels; ++f) {
         for (std::size_t oy = 0; oy < gradOutput.height(); ++oy) {
             for (std::size_t ox = 0; ox < gradOutput.width(); ++ox) {
 
@@ -152,7 +156,10 @@ Tensor Conv2D::backward(const Tensor& gradOutput) {
                                 std::size_t wi = weightIndex(f, c, ky, kx);
 
                                 gradWeights_[wi] += grad * cachedInput_.at(iy, ix, c);
-                                gradInput.at(iy, ix, c) += grad * weights_[wi];
+                                
+                                double inputGrad = grad * weights_[wi];
+#pragma omp atomic
+                                gradInput.at(iy, ix, c) += inputGrad;
                             }
                         }
                     }

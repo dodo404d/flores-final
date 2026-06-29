@@ -13,6 +13,6 @@ SoftmaxCrossEntropy
 
 Epocas: 20
 Learning rate: 0.001
-Imagenes usadas: 249
-Tiempo total ms: 89946.4
+Imagenes usadas: 1250
+Tiempo total ms: 1.35568e+06
 Metricas CSV: results/cnn_secuencial.csv

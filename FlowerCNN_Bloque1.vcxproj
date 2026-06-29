@@ -21,13 +21,13 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v145</PlatformToolset>
+    <PlatformToolset>v143</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v145</PlatformToolset>
+    <PlatformToolset>v143</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
@@ -53,6 +53,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
+      <OpenMPSupport>true</OpenMPSupport>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <AdditionalIncludeDirectories>$(ProjectDir)include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
@@ -69,6 +70,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
+      <OpenMPSupport>true</OpenMPSupport>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <AdditionalIncludeDirectories>$(ProjectDir)include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
@@ -91,6 +93,9 @@
     <ClCompile Include="src\layers\Dense.cpp" />
     <ClCompile Include="src\layers\ReLU.cpp" />
     <ClCompile Include="src\layers\SoftmaxCrossEntropy.cpp" />
+    <ClCompile Include="src\layers\Conv2D.cpp" />
+    <ClCompile Include="src\layers\MaxPool2D.cpp" />
+    <ClCompile Include="src\layers\Flatten.cpp" />
     <ClCompile Include="src\training\OptimizerSGD.cpp" />
     <ClCompile Include="src\training\Metrics.cpp" />
     <ClCompile Include="src\utils\Logger.cpp" />
@@ -110,6 +115,9 @@
     <ClInclude Include="include\layers\Dense.h" />
     <ClInclude Include="include\layers\ReLU.h" />
     <ClInclude Include="include\layers\SoftmaxCrossEntropy.h" />
+    <ClInclude Include="include\layers\Conv2D.h" />
+    <ClInclude Include="include\layers\MaxPool2D.h" />
+    <ClInclude Include="include\layers\Flatten.h" />
     <ClInclude Include="include\training\OptimizerSGD.h" />
     <ClInclude Include="include\training\Metrics.h" />
     <ClInclude Include="include\utils\Logger.h" />

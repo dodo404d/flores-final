@@ -35,10 +35,12 @@ std::vector<double> Dense::backward(const std::vector<double>& gradOutput) {
     gradWeights_.fill(0.0);
     std::fill(gradBias_.begin(), gradBias_.end(), 0.0);
 
-    for (std::size_t i = 0; i < weights_.rows(); ++i) {
+    int numRows = static_cast<int>(weights_.rows());
+#pragma omp parallel for
+    for (int i = 0; i < numRows; ++i) {
         gradBias_[i] = gradOutput[i];
         for (std::size_t j = 0; j < weights_.cols(); ++j) {
-            gradWeights_.at(i, j) = gradOutput[i] * cachedInput_[j];
+            gradWeights_.at(static_cast<std::size_t>(i), j) = gradOutput[i] * cachedInput_[j];
         }
     }
 

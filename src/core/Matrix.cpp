@@ -37,10 +37,12 @@ std::vector<double> Matrix::multiply(const std::vector<double>& vector) const {
     }
 
     std::vector<double> result(rows_, 0.0);
-    for (std::size_t i = 0; i < rows_; ++i) {
+    int numRows = static_cast<int>(rows_);
+#pragma omp parallel for
+    for (int i = 0; i < numRows; ++i) {
         double sum = 0.0;
         for (std::size_t j = 0; j < cols_; ++j) {
-            sum += at(i, j) * vector[j];
+            sum += at(static_cast<std::size_t>(i), j) * vector[j];
         }
         result[i] = sum;
     }
@@ -53,10 +55,12 @@ std::vector<double> Matrix::transposeMultiply(const std::vector<double>& vector)
     }
 
     std::vector<double> result(cols_, 0.0);
-    for (std::size_t j = 0; j < cols_; ++j) {
+    int numCols = static_cast<int>(cols_);
+#pragma omp parallel for
+    for (int j = 0; j < numCols; ++j) {
         double sum = 0.0;
         for (std::size_t i = 0; i < rows_; ++i) {
-            sum += at(i, j) * vector[i];
+            sum += at(i, static_cast<std::size_t>(j)) * vector[i];
         }
         result[j] = sum;
     }

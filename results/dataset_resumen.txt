@@ -1,12 +1,12 @@
 Resumen de carga del dataset real
 =================================
-Total de imagenes cargadas: 15
+Total de imagenes cargadas: 1250
 
-daisy: 3
-dandelion: 3
-rose: 3
-sunflower: 3
-tulip: 3
+daisy: 250
+dandelion: 250
+rose: 250
+sunflower: 250
+tulip: 250
 
 Primera imagen cargada:
 Archivo: dataset/flowers\daisy\100080576_f52e8ee070_n.jpg
